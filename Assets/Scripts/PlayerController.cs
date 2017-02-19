@@ -58,7 +58,7 @@ public class PlayerController : MonoBehaviour
 			SceneManager.LoadScene (SceneManager.GetActiveScene().name);
 		// Checks every frame for quit command
 		if(Input.GetKeyDown(KeyCode.Escape))
-			Application.Quit();
+			Application.Quit();       
 
 		// Checks every frame for Jump button
 		if(controller.isGrounded && Input.GetButtonDown("Jump"))
