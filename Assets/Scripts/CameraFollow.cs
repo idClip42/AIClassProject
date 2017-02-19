@@ -24,7 +24,8 @@ public class CameraFollow : MonoBehaviour {
 	void FixedUpdate () {
 
         //get a vector representing the distance between camera and target
-        followOffset = camTarget.transform.forward * followDistance * -1;
+        //followOffset = camTarget.transform.forward * followDistance * -1;
+        followOffset = Vector3.forward * followDistance * -1;
 
         //apply that to this position (with relation to target position)
         this.transform.position = camTarget.transform.position + followOffset;
