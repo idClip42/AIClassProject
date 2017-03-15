@@ -16,9 +16,20 @@ public class AStarPathfinder : MonoBehaviour
 												// Used to ensure that the algorithm does not loop infinitely
 												// if there are problems in the code
 
+    //property to get list of paths (for random flocking selection)
+    public AStarNode[] NODE_LIST
+    {
+        get { return nodes; }
+    }
+
+    //returns a random node (used in flocking for now)
+    public AStarNode RandomNode
+    {
+        get { return nodes[Mathf.FloorToInt(Random.Range(0, nodes.Length - 1))]; }
+    }
 
 
-	void Start()
+	void Awake()
 	{
 		pathfinder = this;						// Initializes this pathfinder as public static object
 

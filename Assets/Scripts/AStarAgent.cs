@@ -7,15 +7,15 @@ public class AStarAgent : MonoBehaviour
 
 	public float speed = 10;			// The speed at which the player walks,
 	public float acceleration = 50;		// The rate of the player's acceleration
-	CharacterController controller;		// The player's character controller
-	Vector3 velocity;					// The velocity the Character Controller will move at every frame
-	Vector3 vertVelocity;				// The vertical velocity, which won't be limited to one speed
-	Animator anim;						// The character model of the current player character
+	protected CharacterController controller;       // The player's character controller
+    protected Vector3 velocity;                  // The velocity the Character Controller will move at every frame
+    protected Vector3 vertVelocity;              // The vertical velocity, which won't be limited to one speed
+    protected Animator anim;                        // The character model of the current player character
 
-	Stack<Transform> nodeStack;			// Stack of path nodes to follow
-	Transform currentNodeTarget;		// The node currently targeted
-	Vector3 target;						// Where the character is currently moving
-	Vector3 finalDestination;			// The input location that agent is ultimately approaching
+    protected Stack<Transform> nodeStack;           // Stack of path nodes to follow
+    protected Transform currentNodeTarget;      // The node currently targeted
+    protected Vector3 target;                       // Where the character is currently moving
+    protected Vector3 finalDestination;			// The input location that agent is ultimately approaching
 
 
 
@@ -28,7 +28,7 @@ public class AStarAgent : MonoBehaviour
 	/// Sets the A* path from the current location to the given destination
 	/// </summary>
 	/// <param name="destination">Where the agent will go</param>
-	void SetPath(Vector3 destination)
+	protected void SetPath(Vector3 destination)
 	{
 		// Starts by finding the closest path node
 		// to the current position
@@ -67,6 +67,8 @@ public class AStarAgent : MonoBehaviour
 
 		// Gets and returns the path
 		nodeStack = AStarPathfinder.pathfinder.GetPath(closestStartNode, closestEndNode);
+
+
 		if(nodeStack == null)
 		{
 			if(closestStartNode == closestEndNode)
@@ -82,7 +84,7 @@ public class AStarAgent : MonoBehaviour
 	/// Called each FixedUpdate, this checks if the agent has reached the target node
 	/// and if so, gets the next target
 	/// </summary>
-	void PathfindingUpdate()
+	protected virtual void PathfindingUpdate()
 	{
 		// Upon user input, will target and follow player
 		// for testing purposes
@@ -118,13 +120,13 @@ public class AStarAgent : MonoBehaviour
 		}
 	}
 
-
+    //makes ONLY the A* agent move to player
 	void OnGUI()
 	{
 		GUI.Box(new Rect(0,0,200,50), "");
 		if(GUI.Button(new Rect(40,10,120,30), "A* Go To Player"))
 		{
-			SetPath(GameObject.FindGameObjectWithTag("Player").transform.position);
+			GameObject.Find("AStarAgent").GetComponent<AStarAgent>().SetPath(GameObject.FindGameObjectWithTag("Player").transform.position);
 		}
 	}
 
@@ -162,7 +164,7 @@ public class AStarAgent : MonoBehaviour
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-	void Start () 
+	virtual protected void Start () 
 	{
 		// Gets animator
 		controller = GetComponent<CharacterController>();
@@ -182,9 +184,9 @@ public class AStarAgent : MonoBehaviour
 	/// <summary>
 	/// Updates at a fixed rate based on Physics
 	/// </summary>
-	void FixedUpdate () 
+	virtual protected void FixedUpdate () 
 	{
-		MovePlayer();
+		MovePlayer();     
 		Animate();
 		PathfindingUpdate();
 	}
@@ -192,15 +194,16 @@ public class AStarAgent : MonoBehaviour
 	/// <summary>
 	/// Moves the player.
 	/// </summary>
-	void MovePlayer()
+	protected virtual void MovePlayer()
 	{
-		// Adds input movement to the velocity
-		velocity += Vector3.ClampMagnitude(
-			Vector3.ProjectOnPlane(target - transform.position, Vector3.up) * acceleration, 
-			acceleration) * Time.fixedDeltaTime;
 
-		// Limits velocity to set speed
-		velocity = Vector3.ClampMagnitude(velocity, speed);
+        // Adds input movement to the velocity
+        velocity += Vector3.ClampMagnitude(
+            Vector3.ProjectOnPlane(target - transform.position, Vector3.up) * acceleration,
+            acceleration) * Time.fixedDeltaTime;
+
+        // Limits velocity to set speed
+        velocity = Vector3.ClampMagnitude(velocity, speed);
 
 		// Drag
 		velocity -= velocity * 0.1f;
@@ -210,12 +213,13 @@ public class AStarAgent : MonoBehaviour
 
 		// Moves the player with the new velocity
 		controller.Move((velocity + vertVelocity) * Time.fixedDeltaTime);
+
 	}
 
 	/// <summary>
 	/// Animate the player model.
 	/// </summary>
-	void Animate()
+	protected void Animate()
 	{
 		if(anim == null) 
 			return;
