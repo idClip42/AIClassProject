@@ -2,87 +2,75 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-//inherits from base AStarAgent, as flockers will also follow the A* path, but calculate their targets differently
-public class Vehicle : AStarAgent {
+
+public class Vehicle : MonoBehaviour {
     private GameManager gm;
+    private Vector3 currentTarget;
     private List<float> tooCloseFlockers;
     private Rigidbody myRigidBody;
     private Vector3 desiredVelocity;    //used for steering calculations
     private float maxSpeed;
     private float maxForce;
     private Vector3 desiredAcceleration;
+    private CharacterController controller;
+    private bool isPathing;
+
 
     //called once at start of program
     //initialize fields
-	override protected void Start()
+	void Start()
     {
-        base.Start();
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         tooCloseFlockers = new List<float>();
-        myRigidBody = this.GetComponent<Rigidbody>();
         desiredVelocity = new Vector3();
         maxSpeed = gm.FlockerMaxSpeed;
         maxForce = gm.FlockerMaxForce;
-
+        controller = this.GetComponent<CharacterController>();
+        myRigidBody = this.GetComponent<Rigidbody>();
+        currentTarget = this.transform.position;
+        isPathing = false;
 	}
 
 	
 	//fixedupdate is called once per physics tick
     //may or may not be once per frame
     //overrides base class to account for overridden pathfinding update
-	override protected void FixedUpdate () {
-        PathfindingUpdate();
-        MovePlayer();
-        Animate();
+	void FixedUpdate ()
+    {
+        CheckArrival();
+        Move();
 	}
 
-    //a special pathfinding update for Flockers
-    protected override void PathfindingUpdate()
+    public void SetCurrentTarget(Vector3 target)
     {
-        // If there is no nodeStack, do nothing
-        if (nodeStack == null) return;
-
-        // Gets the squared distance between agent and node and the squared node radius
-        // This is to avoid square roots
-        float distSqr = Vector3.SqrMagnitude(currentNodeTarget.position - transform.position);
-        float radiusSqr = Mathf.Pow(gm.TargetChangeDistance, 2);
-
-        // If the agent is within range of the node, gets a new target node
-        if (distSqr < radiusSqr)
-        {
-            if (nodeStack.Count > 0)
-            {
-                currentNodeTarget = nodeStack.Pop();
-                target = currentNodeTarget.transform.position;
-            }
-            else
-            {
-                currentNodeTarget = null;
-                nodeStack = null;
-                target = finalDestination;
-            }
-        }
-
-        //if there's no more nodes to go to, just get a new path
-        //if(nodeStack == null)
-        //{
-        //    AssignFlockerPath(AStarPathfinder.pathfinder.RandomNode.transform.position);
-        //}
+        currentTarget = target;
+        isPathing = true;
     }
 
-    protected override void MovePlayer()
+    //a special pathfinding update for Flockers
+    void CheckArrival()
     {
+        //If we're within range of current target, we're done pathing
+        if (Vector3.Distance(this.transform.position, currentTarget) < gm.ArrivalBoundary)
+        {
+            currentTarget = transform.position;
+            isPathing = false;
+        }
+    }
+
+    void Move()
+    {
+        //if we're not pathing, make us arrive (and don't calc any steering)
+        if (!isPathing)
+        {
+            if(myRigidBody.velocity.sqrMagnitude > 1) myRigidBody.AddForce(myRigidBody.velocity * gm.ArrivalDrag * -1);
+            return;
+        }
+
         //(input movement of flockers obtained from CalcSteeringForces()
         CalcSteeringForces();
 
-        velocity += desiredAcceleration * Time.fixedDeltaTime;
-
-        Vector3.ClampMagnitude(velocity, gm.FlockerMaxSpeed);
-
-        vertVelocity += Physics.gravity * Time.fixedDeltaTime;
-        if (vertVelocity.y < Physics.gravity.y) vertVelocity = Physics.gravity;
-
-        controller.Move((velocity + vertVelocity) * Time.fixedDeltaTime);
+        this.transform.forward = myRigidBody.velocity.normalized;
 
         desiredAcceleration *= 0;
     }
@@ -95,13 +83,13 @@ public class Vehicle : AStarAgent {
         Vector3 seekForce = new Vector3();
 
         //seeks to current target (see base class)
-        seekForce += Seek(target) * gm.SeekingWeight;
+        seekForce += Seek(currentTarget) * gm.SeekingWeight;
 
         //flocking behaviors, weighted for smoother simulation
         //the weights are coming from public variables in the game manager
-        seekForce += Separation(gm.SeparationDistance) * gm.SeparationWeight; //30
-        seekForce += Cohesion() * gm.CohesionWeight; //1.8
-        seekForce += Alignment() * gm.AlignmentWeight;    //1.8
+        seekForce += Separation(gm.SeparationDistance) * gm.SeparationWeight;
+        seekForce += Cohesion() * gm.CohesionWeight;
+        seekForce += Alignment() * gm.AlignmentWeight;
 
         //obstacle avoidance - weight it
         foreach (GameObject obst in gm.Obstacles)
@@ -111,24 +99,8 @@ public class Vehicle : AStarAgent {
 
         //limit the steering force before applying
         seekForce = Vector3.ClampMagnitude(seekForce, maxForce);
-
         ApplyForce(seekForce);  
     }
-
-    //gives the flockers a new path to follow
-    //this should only be called once
-    public void AssignFlockerPath(Vector3 t)
-    {
-        SetPath(t + Vector3.one);
-
-        foreach(GameObject f in gm.Flockers)
-        {
-            f.GetComponent<Vehicle>().SetFlockerPath(this.nodeStack, this.currentNodeTarget, this.target, this.finalDestination);
-        }
-    }
-
-
-
 
 
 
@@ -140,27 +112,11 @@ public class Vehicle : AStarAgent {
     /// </summary>
 
 
-
-
-
-    //sets flocker path
-    //TAKES - flocker information from the 1st flocker
-    //nodeStack, currentNode, target, finaldestination
-    public void SetFlockerPath(Stack<Transform> ns, Transform cnt, Vector3 tar, Vector3 fd)
-    {
-        nodeStack = ns;
-        currentNodeTarget = cnt;
-        target = tar;
-        finalDestination = fd;
-    }
-
-
-    //applies a force to this object's velocity (to move character controller - see base class AStarAgent)
+    //applies a force to this object's rigidbody
     void ApplyForce(Vector3 steeringForce)
     {
         //velocity += steeringForce;
-        this.desiredAcceleration += steeringForce;
-        
+        myRigidBody.AddForce(steeringForce);
     }
 
     //returns a seeking force to a position
@@ -173,8 +129,7 @@ public class Vehicle : AStarAgent {
         desired *= maxSpeed;
         
         //gets the steering vector (desired - velocity)
-        Vector3 steer = desired - velocity;
-        steer.y = 0;
+        Vector3 steer = desired - myRigidBody.velocity;
         return steer;
     }
 
@@ -182,8 +137,6 @@ public class Vehicle : AStarAgent {
     //PARAMS: A GameObject representing the obstacle to avoid,
     //        and a float for the distance at which the flocker
     //        should start to try and avoid the obstacle.
-    
-
     Vector3 AvoidObstacle(GameObject obst, float safeDist)
     {
         return Vector3.zero;    //stub for now, TODO
@@ -222,7 +175,7 @@ public class Vehicle : AStarAgent {
     //returns a Vector to help all flockers have the same direction
     Vector3 Alignment()
     {
-        return (gm.AverageFlockDirection - velocity);
+        return gm.AverageFlockDirection - myRigidBody.velocity;
     }
 
     //seeks the flocker to the centroid for cohesion

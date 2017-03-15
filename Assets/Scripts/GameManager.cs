@@ -11,21 +11,24 @@ public class GameManager : MonoBehaviour {
     //FLOCKING PARAMS - TO BE CHANGED IN THE INSPECTOR
     //These can be manipulated by key presses for project 2
     [Header("Flocking Parameters")]
-    public float TargetChangeDistance;
-    public float ObstacleAvoidanceDistance;
-    public float SeparationDistance;
+    public float ArrivalBoundary;               //the distance from target when we begin to arrive
+    public float ObstacleAvoidanceDistance;     //the "safe distance" away from obstacles before we start to steer
+    public float SeparationDistance;            //distance to maintain between flockers
 
+    //weighting - increase weight to factor that force
+    //more into the steering calculation
     public float SeekingWeight;
     public float SeparationWeight;
     public float AlignmentWeight;
     public float CohesionWeight;
     public float ObstacleAvoidanceWeight;
 
-    public float FlockerMaxSpeed;
-    public float FlockerMaxForce;
+    public float FlockerMaxSpeed;               //max speed that the flocker can achieve
+    public float FlockerMaxForce;               //max magnitude of force (acceleration) applied to flocker each tick
+    public float ArrivalDrag;                   //the amount of drag to apply when inside the arrival zone
 
-    public GameObject centroidObj;
-    public GameObject pointObj;
+    [Header("Debug Objects")]
+    public GameObject centroidObj;              //centroid used for cohesion
 
 
     //attributes
@@ -98,13 +101,14 @@ public class GameManager : MonoBehaviour {
     //flockers use this for alignment, since the average should be the same for all
     private void CalcFlockDirection()
     {
+        avgFlockDir = Vector3.zero;
+
         //loops through flockers, gets average of forward vectors (flock direction)
         foreach (GameObject flocker in flockers)
         {
-            avgFlockDir += flocker.transform.forward;
+            avgFlockDir += flocker.GetComponent<Rigidbody>().velocity.normalized;
         }
         avgFlockDir /= flockers.Length;
-        avgFlockDir.Normalize();
         avgFlockDir *= FlockerMaxSpeed;
     }
 
@@ -114,11 +118,17 @@ public class GameManager : MonoBehaviour {
     private void GetNewTarget()
     {
 
-        AStarNode randomNode = AStarPathfinder.pathfinder.RandomNode;
+        foreach(GameObject f in flockers)
+        {
+            f.GetComponent<Vehicle>().SetCurrentTarget(
+                GameObject.FindGameObjectWithTag("Player").transform.position);
+        }
+
+        //AStarNode randomNode = AStarPathfinder.pathfinder.RandomNode;
 
         //assigns path to the first flocker, which sends it to the rest
         //(the way I do this right now is a bit janky, but only because
         //all of the flockers can't find a path due to closed nodes)
-        if (flockers.Length > 0)flockers[0].GetComponent<Vehicle>().AssignFlockerPath(randomNode.transform.position);
+        //if (flockers.Length > 0)flockers[0].GetComponent<Vehicle>().AssignFlockerPath(randomNode.transform.position);
     }
 }
