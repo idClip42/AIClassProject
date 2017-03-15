@@ -7,15 +7,15 @@ public class AStarAgent : MonoBehaviour
 
 	public float speed = 10;			// The speed at which the player walks,
 	public float acceleration = 50;		// The rate of the player's acceleration
-	protected CharacterController controller;       // The player's character controller
-    protected Vector3 velocity;                  // The velocity the Character Controller will move at every frame
-    protected Vector3 vertVelocity;              // The vertical velocity, which won't be limited to one speed
-    protected Animator anim;                        // The character model of the current player character
+	private CharacterController controller;       // The player's character controller
+    private Vector3 velocity;                  // The velocity the Character Controller will move at every frame
+    private Vector3 vertVelocity;              // The vertical velocity, which won't be limited to one speed
+    private Animator anim;                        // The character model of the current player character
 
-    protected Stack<Transform> nodeStack;           // Stack of path nodes to follow
-    protected Transform currentNodeTarget;      // The node currently targeted
-    protected Vector3 target;                       // Where the character is currently moving
-    protected Vector3 finalDestination;			// The input location that agent is ultimately approaching
+    private Stack<Transform> nodeStack;           // Stack of path nodes to follow
+    private Transform currentNodeTarget;      // The node currently targeted
+    private Vector3 target;                       // Where the character is currently moving
+    private Vector3 finalDestination;			// The input location that agent is ultimately approaching
 
 
 
@@ -164,7 +164,7 @@ public class AStarAgent : MonoBehaviour
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-	virtual protected void Start () 
+	void Start () 
 	{
 		// Gets animator
 		controller = GetComponent<CharacterController>();
@@ -184,7 +184,7 @@ public class AStarAgent : MonoBehaviour
 	/// <summary>
 	/// Updates at a fixed rate based on Physics
 	/// </summary>
-	virtual protected void FixedUpdate () 
+	void FixedUpdate () 
 	{
 		MovePlayer();     
 		Animate();

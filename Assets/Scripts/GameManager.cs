@@ -3,16 +3,18 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+//The GameManager class, which should be attached to the singleton
+//Oversees in-game operations (mostly flocking for now)
 public class GameManager : MonoBehaviour {
 
-    //a prefab for generating tree box colliders
-    public GameObject TreeBoxPrefab;
+    //a prefab for generating tree box colliders (not used, but should be used to factor trees into obstacle avoidance later)
+    //public GameObject TreeBoxPrefab;
 
     //FLOCKING PARAMS - TO BE CHANGED IN THE INSPECTOR
     //These can be manipulated by key presses for project 2
     [Header("Flocking Parameters")]
     public float ArrivalBoundary;               //the distance from target when we begin to arrive
-    public float ObstacleAvoidanceDistance;     //the "safe distance" away from obstacles before we start to steer
+    public float ObstacleAvoidanceDistance;     //the distance ahead that the object looks for obstacles
     public float SeparationDistance;            //distance to maintain between flockers
 
     //weighting - increase weight to factor that force
@@ -34,13 +36,13 @@ public class GameManager : MonoBehaviour {
     //attributes
     private GameObject[] obstacles;
     private GameObject[] flockers;
-    //private AStarNode target;
 
     //--flocking
-    private Vector3 centroid = new Vector3();
-    private Vector3 avgFlockDir = new Vector3();
+    private Vector3 centroid;
+    private Vector3 avgFlockDir;
 
-    //property for obstacles/flockers
+
+    //properties for obstacles/flockers
     public GameObject[] Obstacles
     {
         get { return obstacles; }
@@ -61,26 +63,25 @@ public class GameManager : MonoBehaviour {
     //called once for setup purposes
 	void Start () {
 
+        centroid = new Vector3();
+        avgFlockDir = new Vector3();
+
         //store all flockers (should have tag "Flocker") in an array
         flockers = GameObject.FindGameObjectsWithTag("Flocker");
-        //Debug.Log("There are " + flockers.Length + " objects in the flocker array.");
 
         //add all "obstacles"
-        //these can be walls, houses, the A* character, whatever.
-        //I feel like this array will get large quickly - binning may help down the road
         obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
-        Debug.Log("There are " + obstacles.Length + " objects in the obstacle array.");
     }
 	
     //update method is called once per frame
 	void Update () {
 
+        //navigates the flock to the player when "p" is pressed
         if (Input.GetKeyDown(KeyCode.P)) GetNewTarget();
 
-        //calculates the centroid and flock direction
+        //calculates the centroid and flock direction (used in alignment and cohesion)
         CalcCentroid();
         CalcFlockDirection();
-        
 	}
 
     //calculates the centroid of the flock
@@ -94,7 +95,9 @@ public class GameManager : MonoBehaviour {
             centroid += flocker.transform.position;
         }
         centroid /= flockers.Length;
-        centroidObj.transform.position = centroid;
+        
+        //turn this on if you want to see the centroid as a sphere
+        //centroidObj.transform.position = centroid;
     }
 
     //calculates the average flock direction
@@ -112,23 +115,14 @@ public class GameManager : MonoBehaviour {
         avgFlockDir *= FlockerMaxSpeed;
     }
 
-    //gets a random AStarNode to flock to
-    //since the flockers extend from AStarAgents, they should
-    //be able to handle this correctly
+    //loops through all the flockers and tells them to go
+    //to the player's position
     private void GetNewTarget()
     {
-
-        foreach(GameObject f in flockers)
+        Vector3 playerPos = GameObject.FindGameObjectWithTag("Player").transform.position;
+        foreach (GameObject f in flockers)
         {
-            f.GetComponent<Vehicle>().SetCurrentTarget(
-                GameObject.FindGameObjectWithTag("Player").transform.position);
+            f.GetComponent<Vehicle>().SetCurrentTarget(playerPos);
         }
-
-        //AStarNode randomNode = AStarPathfinder.pathfinder.RandomNode;
-
-        //assigns path to the first flocker, which sends it to the rest
-        //(the way I do this right now is a bit janky, but only because
-        //all of the flockers can't find a path due to closed nodes)
-        //if (flockers.Length > 0)flockers[0].GetComponent<Vehicle>().AssignFlockerPath(randomNode.transform.position);
     }
 }
