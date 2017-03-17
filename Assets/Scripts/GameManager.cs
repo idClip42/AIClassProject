@@ -78,6 +78,8 @@ public class GameManager : MonoBehaviour {
 
         //navigates the flock to the player when "p" is pressed
         if (Input.GetKeyDown(KeyCode.P)) GetNewTarget();
+
+		//controls for turning on or off separation, alignment, or cohesion
 		if (Input.GetKeyDown (KeyCode.J)) {
 			if (SeparationWeight == 10)
 				SeparationWeight = 0;
@@ -96,6 +98,8 @@ public class GameManager : MonoBehaviour {
 			else if (CohesionWeight == 0)
 				CohesionWeight = 1.8f;
 		}
+
+		//controls for adding a new flocker, spawns the flocker on the centroid of he flock then adds it to the flocker array
 		if (Input.GetKeyDown (KeyCode.H)) {
 			Quaternion rot = new Quaternion (centroidObj.transform.eulerAngles.x, centroidObj.transform.eulerAngles.y, centroidObj.transform.eulerAngles.z, 0);
 			Instantiate (Flockers [0], centroidObj.transform.position, rot);
