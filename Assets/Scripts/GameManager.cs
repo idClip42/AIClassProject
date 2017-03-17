@@ -78,7 +78,29 @@ public class GameManager : MonoBehaviour {
 
         //navigates the flock to the player when "p" is pressed
         if (Input.GetKeyDown(KeyCode.P)) GetNewTarget();
-
+		if (Input.GetKeyDown (KeyCode.J)) {
+			if (SeparationWeight == 10)
+				SeparationWeight = 0;
+			else if (SeparationWeight == 0)
+				SeparationWeight = 10;
+		}
+		if (Input.GetKeyDown (KeyCode.K)) {
+			if (AlignmentWeight == 1.8f)
+				AlignmentWeight = 0;
+			else if (AlignmentWeight == 0)
+				AlignmentWeight = 1.8f;
+		}
+		if (Input.GetKeyDown (KeyCode.L)) {
+			if (CohesionWeight == 1.8f)
+				CohesionWeight = 0;
+			else if (CohesionWeight == 0)
+				CohesionWeight = 1.8f;
+		}
+		if (Input.GetKeyDown (KeyCode.H)) {
+			Quaternion rot = new Quaternion (centroidObj.transform.eulerAngles.x, centroidObj.transform.eulerAngles.y, centroidObj.transform.eulerAngles.z, 0);
+			Instantiate (Flockers [0], centroidObj.transform.position, rot);
+			flockers = GameObject.FindGameObjectsWithTag("Flocker");
+		}
         //calculates the centroid and flock direction (used in alignment and cohesion)
         CalcCentroid();
         CalcFlockDirection();
@@ -97,7 +119,7 @@ public class GameManager : MonoBehaviour {
         centroid /= flockers.Length;
         
         //turn this on if you want to see the centroid as a sphere
-        //centroidObj.transform.position = centroid;
+        centroidObj.transform.position = centroid;
     }
 
     //calculates the average flock direction
