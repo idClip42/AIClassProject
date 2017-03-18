@@ -71,13 +71,15 @@ public class GameManager : MonoBehaviour {
 
         //add all "obstacles"
         obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
+
+		//GetNewTarget();
     }
 	
     //update method is called once per frame
 	void Update () {
 
         //navigates the flock to the player when "p" is pressed
-        if (Input.GetKeyDown(KeyCode.P)) GetNewTarget();
+        //if (Input.GetKeyDown(KeyCode.P)) GetNewTarget();
 
 		//controls for turning on or off separation, alignment, or cohesion
 		if (Input.GetKeyDown (KeyCode.J)) {
@@ -145,10 +147,21 @@ public class GameManager : MonoBehaviour {
     //to the player's position
     private void GetNewTarget()
     {
-        Vector3 playerPos = GameObject.FindGameObjectWithTag("Player").transform.position;
+        //Vector3 playerPos = GameObject.FindGameObjectWithTag("Player").transform.position;
+		Transform playerPos = GameObject.FindGameObjectWithTag("AStarAgent").transform;
         foreach (GameObject f in flockers)
         {
             f.GetComponent<Vehicle>().SetCurrentTarget(playerPos);
         }
     }
+
+	void OnGUI()
+	{
+		GUI.Box(new Rect(0,50,200,100), "Flocking Controls:" +
+			"\nJ - Separation Weight: " + SeparationWeight +
+			"\nK - Alignment Weight: " + AlignmentWeight + 
+			"\nL - Cohesion Weight: " + CohesionWeight +
+			"\nH - Spawn Flocker");
+	}
+
 }

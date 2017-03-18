@@ -10,7 +10,7 @@ public class Vehicle : MonoBehaviour {
     private GameManager gm;             //the singleton script
 
     //flocking attributes
-    private Vector3 currentTarget;      //where the flocker is navigating to
+    private Transform currentTarget;      //where the flocker is navigating to
     private Vector3 desiredVelocity;    //used for steering calculations
     private bool isPathing;             //is the flocker currently navigating somewhere
 
@@ -24,8 +24,9 @@ public class Vehicle : MonoBehaviour {
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         desiredVelocity = new Vector3();
         myRigidBody = this.GetComponent<Rigidbody>();
-        currentTarget = this.transform.position;
-        isPathing = false;
+        //currentTarget = this.transform;
+		currentTarget = GameObject.FindGameObjectWithTag("AStarAgent").transform;
+        isPathing = true;
 	}
 
 	
@@ -33,14 +34,14 @@ public class Vehicle : MonoBehaviour {
     //may or may not be once per frame
 	void FixedUpdate ()
     {
-        CheckArrival();
+        //CheckArrival();
         UpdateFlocker();
 	}
 
 
     //sets the flocker's current target & flags it as pathing
     //PARAMS: Vector3 for target
-    public void SetCurrentTarget(Vector3 target)
+    public void SetCurrentTarget(Transform target)
     {
         currentTarget = target;
         isPathing = true;
@@ -49,23 +50,28 @@ public class Vehicle : MonoBehaviour {
     private void CheckArrival()
     {
         //If we're within range of current target, we're done pathing
-        if (Vector3.Distance(this.transform.position, currentTarget) < gm.ArrivalBoundary)
+        if (Vector3.Distance(this.transform.position, currentTarget.position) < gm.ArrivalBoundary)
         {
-            currentTarget = transform.position;
-            isPathing = false;
+            //currentTarget = transform;
+            //isPathing = false;
         }
     }
 
     //updates the flocker
     private void UpdateFlocker()
     {
+		
         //if we're not pathing, make us arrive (and don't calc any steering)
-        if (!isPathing)
+        //if (!isPathing)
+		//If we're within range of current target, we're done pathing
+		if (Vector3.Distance(this.transform.position, currentTarget.position) < gm.ArrivalBoundary)
         {
             //decelerate to the object until we're almost stopped (drag will take care of the rest)
             if(myRigidBody.velocity.sqrMagnitude > 1) myRigidBody.AddForce(myRigidBody.velocity * gm.ArrivalDrag * -1, ForceMode.Acceleration);
             return;
         }
+
+
 
         //Calculate steering
         CalcSteeringForces();
@@ -86,7 +92,7 @@ public class Vehicle : MonoBehaviour {
         Vector3 seekForce = new Vector3();
 
         //seeks to current target
-        seekForce += Seek(currentTarget) * gm.SeekingWeight;
+        seekForce += Seek(currentTarget.position) * gm.SeekingWeight;
 
         //flocking behaviors, weighted for smoother simulation
         //the weights are coming from public variables in the game manager
