@@ -6,12 +6,16 @@ public class InfluenceUnit : MonoBehaviour {
 
     //the strength of this unit, with accessor
     private int _strength;
-    public int Strength { get; }
+	public int Strength { get { return _strength; } }
+
+	private int _team;	// NOTE: This should be either 1 or 2
+	public int Team { get { return _team; } }
 
 
 	// Use this for initialization
 	void Start () {
-		
+		// Initializing for coding purposes
+		_team = 1;
 	}
 	
 	// Update is called once per frame

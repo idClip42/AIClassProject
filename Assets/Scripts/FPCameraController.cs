@@ -91,13 +91,15 @@ public class FPCameraController : MonoBehaviour {
         //F Pressed, re-generate influence map
         if(Input.GetKeyDown(KeyCode.F))
         {
-            //stub
+			GetComponent<InfluenceMap>().MakeInfluenceMap();
         }
 
         //R Pressed, restart simulation
         if(Input.GetKeyDown(KeyCode.R))
         {
-            //stub
+			GetComponent<InfluenceMap>().KillMap();
+
+			// TODO: Remove all Units
         }
     }
 
