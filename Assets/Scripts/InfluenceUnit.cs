@@ -15,7 +15,7 @@ public class InfluenceUnit : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		// Initializing for coding purposes
-		_team = 1;
+		//_team = 1;
 	}
 	
 	// Update is called once per frame
@@ -50,6 +50,26 @@ public class InfluenceUnit : MonoBehaviour {
         //set Strength (will be changed to 1 if out of bounds) and position
         _strength = str;
         this.transform.position = setUpPosition();
+        GameObject middle = GameObject.Find("MiddleOfRiver");  //Middle of River
+        GameObject red = GameObject.Find("RedSide"); //Object in Red Side
+        Vector3 redSide = red.transform.position - middle.transform.position; // Vector from middle of river to red side of river
+        Vector3 sideCheck = this.transform.position - middle.transform.position; //vector from middle of river to object position
+
+        //normalize both vectors
+        redSide.Normalize(); 
+        sideCheck.Normalize();
+        
+        //if dot product is positive, object is on red side
+        if (Vector3.Dot(sideCheck, redSide) > 0)
+        {
+            _team = 2;
+        }
+        //if dot product is negative, object is on green side
+        else if (Vector3.Dot(sideCheck, redSide) < 0)
+        {
+            _team = 1;
+        }
+        
     }
 
 
