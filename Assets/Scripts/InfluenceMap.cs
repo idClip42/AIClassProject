@@ -178,7 +178,7 @@ public class InfluenceMap : MonoBehaviour
 	/// </summary>
 	public void KillMap()
 	{
-		GameObject[] objs = GameObject.FindGameObjectsWithTag("Obstacle");
+		GameObject[] objs = GameObject.FindGameObjectsWithTag("Tile");
 		for(int n = 0; n < objs.Length; ++n)
 			Destroy(objs[n]);
 	}
