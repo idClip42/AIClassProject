@@ -83,17 +83,18 @@ public class InfluenceUnit : MonoBehaviour {
         //if we hit the terrain
         if(Physics.Raycast(r, out hit, 1000))
         {
-            Vector3 mousePos = Input.mousePosition;
+            /*Vector3 mousePos = Input.mousePosition;
             mousePos.z = hit.distance;
 
             //get the mouse position in world space and adjust Y to terrain height
             Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(mousePos);
             worldMousePos.y = GameObject.FindGameObjectWithTag("Terrain")
                 .GetComponent<Terrain>().SampleHeight(worldMousePos)
-                + 1.1f;
+                + 1.1f;*/
 
             //return mouse pos w/ terrain height adjustment
-            return worldMousePos;
+            //return worldMousePos;
+            return (hit.point + new Vector3(0, 1.1f, 0));
         }
 
         //if we get here, we didn't hit it, so return 0

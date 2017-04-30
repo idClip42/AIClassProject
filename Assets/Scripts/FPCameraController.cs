@@ -94,12 +94,27 @@ public class FPCameraController : MonoBehaviour {
 			GetComponent<InfluenceMap>().MakeInfluenceMap();
         }
 
-        //R Pressed, restart simulation
+        //R Pressed, clear tiles
         if(Input.GetKeyDown(KeyCode.R))
         {
 			GetComponent<InfluenceMap>().KillMap();
-
+            
 			// TODO: Remove all Units
+        }
+
+        //T Pressed, clear units
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+
+            GameObject[] guys = GameObject.FindGameObjectsWithTag("Unit");
+            foreach (GameObject g in guys)
+                Destroy(g);
+        }
+
+        //escape pressed, exit
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
         }
     }
 
